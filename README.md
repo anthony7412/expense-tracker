@@ -2,7 +2,8 @@
 
 An intelligent expense tracking application with receipt scanning, financial health analysis, and AI-powered insights.
 
-![Dashboard Screenshot](app/static/img/finance_dashboard_bg.jpg)
+![image](https://github.com/user-attachments/assets/fcd6dc69-5587-440e-be8d-6847ec779a4f)
+
 
 ## Features
 
