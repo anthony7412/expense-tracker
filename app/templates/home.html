@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-6 offset-md-3 text-center">
+        <h1 class="display-4">Welcome to AI Expense Tracker</h1>
+        <p class="lead">Track your expenses, upload bank statements, and get insights into your spending patterns.</p>
+        
+        <div class="mt-5">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('expense.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Track Expenses</h5>
+                        <p class="card-text">Easily log your daily expenses and categorize them.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload Statements</h5>
+                        <p class="card-text">Upload PDF bank statements and let AI extract your expenses.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Visualize Spending</h5>
+                        <p class="card-text">Get insights with visual reports of your spending patterns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

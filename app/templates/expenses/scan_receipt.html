@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Scan Receipt</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-receipt fa-4x text-primary mb-3"></i>
+                        <p class="lead">Upload a photo of your receipt to automatically extract expense details</p>
+                    </div>
+                    
+                    {% if ocr_available %}
+                    <form method="POST" enctype="multipart/form-data" class="mb-4">
+                        <div class="mb-3">
+                            <label for="receipt" class="form-label">Receipt Image</label>
+                            <input type="file" class="form-control" id="receipt" name="receipt" accept="image/*" required>
+                            <div class="form-text">Supported formats: JPG, PNG, JPEG</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-magic me-2"></i> Scan Receipt
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-lightbulb me-2"></i> Tips for best results:</h5>
+                        <ul class="mb-0">
+                            <li>Ensure good lighting when taking the photo</li>
+                            <li>Keep the receipt flat and avoid wrinkles</li>
+                            <li>Make sure the total amount is clearly visible</li>
+                            <li>Include the date and merchant name in the photo</li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i> OCR Functionality Not Available</h5>
+                        <p>To enable receipt scanning, please install the required packages:</p>
+                        <pre class="bg-light p-3 mt-2">pip install pytesseract pillow opencv-python</pre>
+                        <p class="mt-2">You'll also need to install Tesseract OCR on your system:</p>
+                        <ul>
+                            <li><a href="https://github.com/UB-Mannheim/tesseract/wiki" target="_blank">Windows</a></li>
+                            <li><a href="https://tesseract-ocr.github.io/tessdoc/Installation.html" target="_blank">Other platforms</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('expense.add_expense') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-keyboard me-2"></i> Enter Expense Manually
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Expenses</h2>
+        <a href="{{ url_for('expense.add_expense') }}" class="btn btn-primary">Add Expense</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Source</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ expense.description }}</td>
+                            <td>{{ expense.category.name }}</td>
+                            <td>${{ "%.2f"|format(expense.amount) }}</td>
+                            <td>{{ expense.source }}</td>
+                            <td>
+                                <a href="{{ url_for('expense.edit_expense', id=expense.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="{{ url_for('expense.delete_expense', id=expense.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Financial Advisor Chat Interface -->
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="fas fa-robot me-2"></i>AI Financial Advisor Chat
+            </h4>
+        </div>
+        <div class="card-body">
+            <!-- Chat Messages Container -->
+            <div id="chatMessages" class="chat-container mb-3" style="height: 400px; overflow-y: auto;">
+                <div class="welcome-message alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Hello! I'm your AI financial advisor. I can help you with:
+                    <ul class="mt-2">
+                        <li>Analyzing your spending patterns</li>
+                        <li>Providing budgeting advice</li>
+                        <li>Suggesting saving strategies</li>
+                        <li>Identifying areas for improvement</li>
+                        <li>Setting financial goals</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Quick Questions Buttons -->
+            <div class="quick-questions mb-3">
+                <p class="text-muted mb-2">Quick Questions:</p>
+                <button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="askQuestion('How can I reduce my monthly expenses?')">
+                    <i class="fas fa-chart-line me-1"></i>Reduce Expenses
+                </button>
+                <button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="askQuestion('What are my biggest spending categories?')">
+                    <i class="fas fa-chart-pie me-1"></i>Spending Analysis
+                </button>
+                <button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="askQuestion('How can I save more money?')">
+                    <i class="fas fa-piggy-bank me-1"></i>Saving Tips
+                </button>
+                <button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="askQuestion('Suggest a budget for my categories')">
+                    <i class="fas fa-tasks me-1"></i>Budget Planning
+                </button>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <div class="input-group">
+                    <textarea id="userQuestion" class="form-control" 
+                        placeholder="Ask me anything about your finances..."
+                        rows="2"
+                        style="resize: none;"
+                        onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('getAiAdvice').click(); }"></textarea>
+                    <button id="getAiAdvice" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-container {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 15px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUpFade 0.3s forwards;
+}
+
+.user-message {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 15px 15px 0 15px;
+    margin-left: auto;
+    max-width: 80%;
+    text-align: right;
+}
+
+.ai-message {
+    background: white;
+    border: 1px solid #e0e0e0;
+    padding: 10px 15px;
+    border-radius: 15px 15px 15px 0;
+    margin-right: auto;
+    max-width: 80%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.typing-indicator {
+    padding: 10px 15px;
+    background: #e9ecef;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #6c757d;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+</style>
+
+<script>
+async function askQuestion(question) {
+    const chatMessages = document.getElementById('chatMessages');
+    const userQuestion = question || document.getElementById('userQuestion').value.trim();
+    
+    if (!userQuestion) {
+        return;
+    }
+    
+    // Add user message
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'message user-message';
+    userMessageDiv.textContent = userQuestion;
+    chatMessages.appendChild(userMessageDiv);
+    
+    // Clear input if it's from the textarea
+    if (!question) {
+        document.getElementById('userQuestion').value = '';
+    }
+    
+    // Add typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message ai-message typing-indicator';
+    typingDiv.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+    chatMessages.appendChild(typingDiv);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    try {
+        console.log("Sending request to /expense/get-ai-advice");
+        const response = await fetch('/expense/get-ai-advice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ question: userQuestion })
+        });
+        
+        console.log("Response status:", response.status);
+        const data = await response.json();
+        console.log("Response data:", data);
+        
+        // Remove typing indicator
+        chatMessages.removeChild(typingDiv);
+        
+        if (data.success && data.advice && data.advice.length > 0) {
+            data.advice.forEach(advice => {
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = `message ai-message alert-${advice.type || 'info'}`;
+                aiMessageDiv.textContent = advice.message;
+                chatMessages.appendChild(aiMessageDiv);
+            });
+        } else {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message ai-message alert-danger';
+            errorDiv.textContent = data.error || 'Sorry, I could not generate advice at this time.';
+            chatMessages.appendChild(errorDiv);
+            
+            // Add a helpful message about possible causes
+            const helpDiv = document.createElement('div');
+            helpDiv.className = 'message ai-message alert-info';
+            helpDiv.innerHTML = 'This might be due to:<br>• Missing API key<br>• Network issues<br>• Not enough expense data<br>Please check your configuration or try again later.';
+            chatMessages.appendChild(helpDiv);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        chatMessages.removeChild(typingDiv);
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'message ai-message alert-danger';
+        errorDiv.textContent = 'Sorry, I encountered an error connecting to the AI service.';
+        chatMessages.appendChild(errorDiv);
+        
+        const helpDiv = document.createElement('div');
+        helpDiv.className = 'message ai-message alert-info';
+        helpDiv.innerHTML = 'Please check:<br>• Your internet connection<br>• API key configuration<br>• Server logs for more details';
+        chatMessages.appendChild(helpDiv);
+    }
+    
+    // Scroll to bottom again after adding response
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Add event listener for the enter key
+document.getElementById('userQuestion').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        askQuestion();
+    }
+});
+
+// Add event listener for the button
+document.getElementById('getAiAdvice').addEventListener('click', () => askQuestion());
+</script>
+{% endblock %} 

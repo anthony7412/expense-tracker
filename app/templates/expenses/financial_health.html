@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Financial Health Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Overall Health Score</h5>
+                    <div class="display-1 mb-3 fw-bold text-{{ 'success' if health.score >= 80 else 'warning' if health.score >= 60 else 'danger' }}">
+                        {{ health.score|round|int }}
+                    </div>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-{{ 'success' if health.score >= 80 else 'warning' if health.score >= 60 else 'danger' }}" 
+                             role="progressbar" 
+                             style="width: {{ health.score }}%;" 
+                             aria-valuenow="{{ health.score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                    <p class="card-text">
+                        {% if health.score >= 80 %}
+                            Your finances are in excellent shape!
+                        {% elif health.score >= 60 %}
+                            Your finances are in good shape, with some room for improvement.
+                        {% else %}
+                            Your finances need attention. Review the recommendations below.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Key Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for metric_name, score in health.metrics.items() %}
+                        <div class="col-md-6 mb-3">
+                            <h6>{{ metric_name|replace('_', ' ')|title }}</h6>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-{{ 'success' if score >= 80 else 'warning' if score >= 60 else 'danger' }}" 
+                                     role="progressbar" 
+                                     style="width: {{ score }}%;" 
+                                     aria-valuenow="{{ score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">{{ score|round|int }}/100</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Insights</h5>
+                </div>
+                <div class="card-body">
+                    {% if health.insights %}
+                        <div class="list-group">
+                            {% for insight in health.insights %}
+                                <div class="list-group-item list-group-item-{{ insight.type }}">
+                                    {{ insight.message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No specific insights available at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Expenses</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_expenses %}
+                        <div class="list-group">
+                            {% for expense in recent_expenses %}
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ expense.description }}</h6>
+                                        <small class="text-muted">{{ expense.date.strftime('%Y-%m-%d') }} | {{ expense.category.name if expense.category else "Uncategorized" }}</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">${{ "%.2f"|format(expense.amount) }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent expenses to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    {% if health.recommendations %}
+                        <div class="list-group">
+                            {% for rec in health.recommendations %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                                            {{ rec.message }}
+                                        </h6>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No specific recommendations at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upcoming Reminders</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_reminders %}
+                        <div class="list-group">
+                            {% for reminder in upcoming_reminders %}
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ reminder.title }}</h6>
+                                        <small class="text-muted">Due: {{ reminder.due_date.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">${{ "%.2f"|format(reminder.amount) }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('expense.reminders') }}" class="btn btn-sm btn-outline-primary">View All Reminders</a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No upcoming reminders.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Financial Goals</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_goals %}
+                        <div class="list-group">
+                            {% for goal in active_goals %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">{{ goal.title }}</h6>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        {% set progress = (goal.current_amount / goal.target_amount) * 100 %}
+                                        <div class="progress-bar bg-success" 
+                                             role="progressbar" 
+                                             style="width: {{ progress }}%;" 
+                                             aria-valuenow="{{ progress }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">${{ "%.2f"|format(goal.current_amount) }} of ${{ "%.2f"|format(goal.target_amount) }} ({{ progress|round|int }}%)</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('expense.goals') }}" class="btn btn-sm btn-outline-primary">View All Goals</a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No active financial goals.</p>
+                        <div class="text-center">
+                            <a href="{{ url_for('expense.add_goal') }}" class="btn btn-sm btn-outline-primary">Create a Goal</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

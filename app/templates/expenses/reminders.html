@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Payment Reminders</h2>
+        <a href="{{ url_for('expense.add_reminder') }}" class="btn btn-primary">Add Reminder</a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Upcoming Payments</h4>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_reminders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Category</th>
+                                    <th>Recurring</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reminder in upcoming_reminders %}
+                                <tr class="{% if (reminder.due_date.date() - today.date()).days <= 3 %}table-danger{% elif (reminder.due_date.date() - today.date()).days <= 7 %}table-warning{% endif %}">
+                                    <td>{{ reminder.title }}</td>
+                                    <td>${{ "%.2f"|format(reminder.amount) }}</td>
+                                    <td>
+                                        {{ reminder.due_date.strftime('%Y-%m-%d') }}
+                                        {% if (reminder.due_date.date() - today.date()).days <= 3 %}
+                                            <span class="badge bg-danger">Due soon!</span>
+                                        {% elif (reminder.due_date.date() - today.date()).days <= 7 %}
+                                            <span class="badge bg-warning">Upcoming</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reminder.category.name if reminder.category else "None" }}</td>
+                                    <td>
+                                        {% if reminder.is_recurring %}
+                                            <span class="badge bg-info">{{ reminder.recurrence_type|capitalize }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success mark-complete" data-id="{{ reminder.id }}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <a href="{{ url_for('expense.edit_reminder', id=reminder.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('expense.delete_reminder', id=reminder.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this reminder?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">You don't have any upcoming payment reminders.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">Recently Completed</h4>
+                </div>
+                <div class="card-body">
+                    {% if completed_reminders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reminder in completed_reminders %}
+                                <tr>
+                                    <td><s>{{ reminder.title }}</s></td>
+                                    <td>${{ "%.2f"|format(reminder.amount) }}</td>
+                                    <td>{{ reminder.due_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ reminder.category.name if reminder.category else "None" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-warning mark-incomplete" data-id="{{ reminder.id }}">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                            <a href="{{ url_for('expense.delete_reminder', id=reminder.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this reminder?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">You don't have any completed payment reminders.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Reminder Tips</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning"></i> Set up recurring reminders for bills and subscriptions
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning"></i> Mark payments as complete once paid
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning"></i> Reminders due within 3 days are highlighted in red
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning"></i> Recurring reminders automatically create the next reminder when completed
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle marking reminders as complete
+    document.querySelectorAll('.mark-complete').forEach(button => {
+        button.addEventListener('click', function() {
+            const reminderId = this.getAttribute('data-id');
+            toggleReminderStatus(reminderId, true);
+        });
+    });
+    
+    // Handle marking reminders as incomplete
+    document.querySelectorAll('.mark-incomplete').forEach(button => {
+        button.addEventListener('click', function() {
+            const reminderId = this.getAttribute('data-id');
+            toggleReminderStatus(reminderId, false);
+        });
+    });
+    
+    function toggleReminderStatus(reminderId, markComplete) {
+        fetch(`/expense/reminders/${reminderId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the page to show the updated status
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+});
+</script>
+{% endblock %} 
