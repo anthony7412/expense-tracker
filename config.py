@@ -17,7 +17,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
     
     # OpenAI configuration
-    OPENAI_API_KEY = "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"  # Replace with your actual API key
+    OPENAI_API_KEY = ""  # Replace with your actual API key
     OPENAI_MODEL = "gpt-3.5-turbo"
     OPENAI_MAX_TOKENS = 800  # Increased for more detailed responses
     OPENAI_TEMPERATURE = 0.7
@@ -33,4 +33,4 @@ class Config:
     # You'll also need to install Tesseract OCR: https://github.com/UB-Mannheim/tesseract/wiki 
     
     # Tesseract OCR configuration
-    TESSERACT_CMD = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Update this path for your system 
+    TESSERACT_CMD = r'C:\Program Files\Tesseract-OCR'  # Update this path for your system 
