@@ -1,6 +1,8 @@
 # AI Expense Tracker
 
 An intelligent expense tracking application with receipt scanning, financial health analysis, and AI-powered insights.
+![image](https://github.com/user-attachments/assets/80c46f5a-4dd5-487c-8cf3-9abf0957997d)
+
 
 ![image](https://github.com/user-attachments/assets/fcd6dc69-5587-440e-be8d-6847ec779a4f)
 
